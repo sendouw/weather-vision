@@ -48,7 +48,7 @@ export default function SearchBar({ onPlaceSelected }: Props) {
     <div className="relative z-[999] mt-6 w-full max-w-md mx-auto px-4">
       <input
         ref={inputRef}
-        className="w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
         type="text"
         placeholder="Input Location"
       />

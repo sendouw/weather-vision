@@ -145,56 +145,67 @@ export default function WeatherMap({
 
   // ──────────── Initialize Leaflet map once `coords` arrives ────────────
   useEffect(() => {
-    if (!coords || mapReady) return;
-    try {
-      const mapInstance = L.map(mapContainerRef.current as HTMLDivElement).setView(
-        [coords.lat, coords.lng],
-        10
-      );
+  if (!coords || leafletMapRef.current) return;
+  // guard against missing container
+  if (!mapContainerRef.current) return;
 
-      leafletMapRef.current = mapInstance;
+  let mapInstance: L.Map | null = null;
+  try {
+    mapInstance = L.map(mapContainerRef.current).setView(
+      [coords.lat, coords.lng],
+      10
+    );
+    leafletMapRef.current = mapInstance;
 
-      // Base OSM tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:
-          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-      }).addTo(mapInstance);
+    // Base OSM tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(mapInstance);
 
-      // Custom marker
-      const customIcon = L.divIcon({
-        html: '📍',
-        className: 'custom-marker',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-      });
-      const marker = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(mapInstance);
-      markerRef.current = marker;
+    // Custom marker
+    const customIcon = L.divIcon({
+      html: '📍',
+      className: 'custom-marker',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+    });
+    const marker = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(mapInstance);
+    markerRef.current = marker;
 
-      // Click handler: recenter + fetch new weather
-      mapInstance.on('click', (e: L.LeafletMouseEvent) => {
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
-        marker.setLatLng([lat, lon]);
-        mapInstance.setView([lat, lon], mapInstance.getZoom());
-        debouncedFetchWeather(lat, lon);
-      });
+    // Click handler: recenter + fetch new weather
+    mapInstance.on('click', (e: L.LeafletMouseEvent) => {
+      const lat = e.latlng.lat;
+      const lon = e.latlng.lng;
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
+      marker.setLatLng([lat, lon]);
+      mapInstance!.setView([lat, lon], mapInstance!.getZoom());
+      debouncedFetchWeather(lat, lon);
+    });
 
-      // Build overlay layers
-      initializeWeatherLayers(mapInstance);
+    // Build overlay layers
+    initializeWeatherLayers(mapInstance);
 
-      setMapReady(true);
-
-      // If parent already wants weather immediately:
-      if (triggerSwimScore) {
-        debouncedFetchWeather(coords.lat, coords.lng);
-      }
-    } catch (e) {
-      console.error('Map initialization failed:', e);
-      setError('Failed to initialize map');
+    setMapReady(true);
+    // If parent already wants weather immediately:
+    if (triggerSwimScore) {
+      debouncedFetchWeather(coords.lat, coords.lng);
     }
-  }, [coords, triggerSwimScore, debouncedFetchWeather, mapReady]);
+  } catch (e) {
+    console.error('Map initialization failed:', e);
+    setError('Failed to initialize map');
+  }
+
+  // CLEANUP: destroy old Leaflet map before effect re-runs (Strict Mode double‐invoke)
+  return () => {
+    if (mapInstance) {
+      mapInstance.remove();
+      leafletMapRef.current = null;
+      setMapReady(false);
+    }
+  };
+}, [coords, triggerSwimScore, debouncedFetchWeather]);
 
   // ──────────── Recenter & fetch if `coords` or `triggerSwimScore` changes ────────────
   useEffect(() => {
@@ -247,7 +258,7 @@ export default function WeatherMap({
         </div>
       )}
 
-      <div ref={mapContainerRef} className="h-full w-full"></div>
+      <div ref={mapContainerRef} className="leaflet-container h-full w-full"></div>
 
       <div className="absolute top-4 right-4 z-50 flex flex-col space-y-2">
         <button

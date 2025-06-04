@@ -217,14 +217,14 @@ export default function Home() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowFavorites(!showFavorites)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm text-black"
             >
               ❤️ Favorites ({favorites.length})
             </button>
 
             <button
               onClick={() => setShowSidebar(!showSidebar)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-black"
             >
               {showSidebar ? '⇤ Hide Panel' : '⇥ Show Panel'}
             </button>
@@ -293,26 +293,29 @@ export default function Home() {
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Map */}
-          <div
-            className={`transition-all duration-300 ${
-              showSidebar ? 'lg:w-1/2' : 'w-full'
-            } h-[70vh] lg:h-[80vh]`}
-          >
-            {coords ? (
-              <WeatherMap
-                coords={coords}
-                onWeatherFetched={setWeatherData}
-                triggerSwimScore={true}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p>Loading map…</p>
-              </div>
-            )}
-          </div>
+{/* Main Content */}
+<div className="flex flex-col lg:flex-row gap-6">
+  {/* Map */}
+  <div
+    className={`transition-all duration-300 ${
+      showSidebar ? 'lg:w-1/2' : 'w-full'
+    } h-[70vh] lg:h-[80vh] flex-shrink-0`}
+  >
+    {coords ? (
+      // ← add “h-full” here so WeatherMap fills that 70vh/80vh wrapper
+      <div className="h-full">
+        <WeatherMap
+          coords={coords}
+          onWeatherFetched={setWeatherData}
+          triggerSwimScore={true}
+        />
+      </div>
+    ) : (
+      <div className="flex h-full items-center justify-center">
+        <p>Loading map…</p>
+      </div>
+    )}
+  </div>
 
           {/* Info Panel */}
           {showSidebar && (
