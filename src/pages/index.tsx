@@ -32,6 +32,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLocationButton, setShowLocationButton] = useState(false);
 
   // Load favorites from localStorage on mount
   useEffect(() => {
@@ -135,40 +136,89 @@ export default function Home() {
     }
   };
 
-  // Initialize location on mount
-  useEffect(() => {
-    const initializeLocation = () => {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const { latitude, longitude } = pos.coords;
-            setCoords({ lat: latitude, lng: longitude });
-            fetchWeatherAndSwimScore(latitude, longitude);
-            setLocationName('Your Current Location');
-            setLoading(false);
-          },
-          (error) => {
-            console.warn('Geolocation failed:', error);
-            const fallback = { lat: 7.5413, lng: 99.0955 }; // Koh Lanta, Thailand
-            setCoords(fallback);
-            fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
-            setLocationName('Koh Lanta, Thailand');
-            setLocationFallback(true);
-            setLoading(false);
-          }
-        );
-      } else {
-        const fallback = { lat: 7.5413, lng: 99.0955 };
-        setCoords(fallback);
-        fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
-        setLocationName('Koh Lanta, Thailand');
-        setLocationFallback(true);
-        setLoading(false);
-      }
-    };
+    // Add this function to request location with user interaction
+const requestLocation = () => {
+  setLoading(true);
+  setError(null);
+  
+  if (!('geolocation' in navigator)) {
+    const fallback = { lat: 7.5413, lng: 99.0955 };
+    setCoords(fallback);
+    fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
+    setLocationName('Koh Lanta, Thailand');
+    setLocationFallback(true);
+    setLoading(false);
+    setError('Geolocation is not supported by your browser');
+    return;
+  }
 
-    initializeLocation();
-  }, []);
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      setCoords({ lat: latitude, lng: longitude });
+      fetchWeatherAndSwimScore(latitude, longitude);
+      setLocationName('Your Current Location');
+      setLoading(false);
+      setShowLocationButton(false);
+      setLocationFallback(false);
+    },
+    (error) => {
+      console.warn('Geolocation failed:', error);
+      let errorMessage = 'Unable to get your location. ';
+      
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage += 'Please enable location access in your browser settings.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage += 'Location information is unavailable.';
+          break;
+        case error.TIMEOUT:
+          errorMessage += 'Location request timed out.';
+          break;
+        default:
+          errorMessage += 'An unknown error occurred.';
+      }
+      
+      setError(errorMessage);
+      
+      // Fall back to default location
+      const fallback = { lat: 7.5413, lng: 99.0955 };
+      setCoords(fallback);
+      fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
+      setLocationName('Koh Lanta, Thailand');
+      setLocationFallback(true);
+      setLoading(false);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+};
+
+// Update the initialization effect
+useEffect(() => {
+  // Check if we're on HTTPS (required for geolocation on iOS)
+  const isHttps = window.location.protocol === 'https:';
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (!isHttps && !isLocalhost) {
+    console.warn('Geolocation requires HTTPS');
+    setError('Location access requires a secure connection (HTTPS)');
+  }
+  
+  // Show location button instead of auto-requesting
+  setShowLocationButton(true);
+  
+  // Load with default location first
+  const fallback = { lat: 7.5413, lng: 99.0955 };
+  setCoords(fallback);
+  fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
+  setLocationName('Koh Lanta, Thailand');
+  setLoading(false);
+}, []);
 
   const formatDate = (hoursAhead: number) => {
     const date = new Date();
@@ -194,6 +244,18 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Location Button */}
+        {showLocationButton && !locationFallback && (
+  <div className="text-center mb-4">
+    <button
+      onClick={requestLocation}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
+    >
+      📍 Use My Location
+    </button>
+  </div>
+        )}
+
         {/* Search and Controls */}
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-6 z-50 relative">
           <div className="flex-1 w-full lg:max-w-md">
@@ -210,6 +272,8 @@ export default function Home() {
                 setPlaceId(placeId);
                 fetchWeatherAndSwimScore(lat, lng);
                 setLocationFallback(false);
+                setShowLocationButton(false);  
+
               }}
             />
           </div>
