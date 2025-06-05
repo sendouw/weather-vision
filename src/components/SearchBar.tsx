@@ -15,15 +15,14 @@ interface Props {
 // Declare the autocomplete element type
 declare global {
   interface Window {
-    google: any;
+    google: typeof google;
     initializeGoogleMapsPromise?: Promise<void>;
   }
 }
 
 export default function SearchBar({ onPlaceSelected }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
-  const [inputValue, setInputValue] = useState("");
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);  const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -76,46 +75,48 @@ export default function SearchBar({ onPlaceSelected }: Props) {
   // Initialize legacy Autocomplete API
   const initializeAutocomplete = useCallback(async () => {
     if (!inputRef.current || !isGoogleLoaded) return;
-
+  
     try {
       // Clear any existing autocomplete
       if (autocompleteRef.current) {
         autocompleteRef.current = null;
       }
-
-      const { Autocomplete } = await window.google.maps.importLibrary("places");
-
-      const autocomplete = new Autocomplete(inputRef.current, {
+  
+      // Ensure the library is loaded
+      await window.google.maps.importLibrary("places");
+  
+      // Use the global constructor after loading
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         fields: ["name", "geometry", "place_id", "formatted_address"],
       });
-
+  
       autocompleteRef.current = autocomplete;
-
+  
       autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
-
+  
         if (!place.geometry?.location) {
           setError("Please select a valid location");
           return;
         }
-
+  
         const placeName = place.name || place.formatted_address || "Unknown Location";
         setInputValue(placeName);
-
+  
         onPlaceSelected({
           name: placeName,
           lat: place.geometry.location.lat(),
           lng: place.geometry.location.lng(),
           placeId: place.place_id || "",
         });
-
+  
         setError(null);
-
+  
         if (window.innerWidth < 768) {
           inputRef.current?.blur();
         }
       });
-
+  
     } catch (err) {
       console.error("Failed to initialize autocomplete:", err);
       setError("Search functionality unavailable");
