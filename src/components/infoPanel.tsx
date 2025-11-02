@@ -4,6 +4,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import WaveInfo from './WaveInfo';
 import SwimScoreInfoModal from './SwimScoreInfoModal';
+import {
+  AlertTriangleIcon,
+  CameraIcon,
+  CloudSunIcon,
+  HeartIcon,
+  HourglassIcon,
+  InfoIcon,
+  LifebuoyIcon,
+  SpeedometerIcon,
+  SmileIcon,
+  SunIcon,
+  WaveIcon,
+  SwimmerIcon,
+} from './icons';
 
 interface PlacePhoto {
   photo_reference: string;
@@ -148,19 +162,36 @@ export default function InfoPanel({
   const hasWeather = cloudVal !== null && rainVal !== null && tempVal !== null;
 
   // Derive a quick "label"+color for the panel header
-  let scoreLabel = 'N/A';
-  let color = 'bg-gray-100 text-gray-600';
+  const defaultScoreState = {
+    label: 'N/A',
+    color: 'bg-gray-100 text-gray-600',
+    Icon: InfoIcon,
+  };
+
+  let scoreState = defaultScoreState;
   if (hasWeather) {
-    scoreLabel = 'Perfect ☀️';
-    color = 'bg-green-100 text-green-800';
+    scoreState = {
+      label: 'Perfect',
+      color: 'bg-green-100 text-green-800',
+      Icon: SunIcon,
+    };
+
     if (rainVal! > 1 || cloudVal! > 70 || tempVal! < 25) {
-      scoreLabel = 'Not Ideal 🧥';
-      color = 'bg-red-100 text-red-700';
+      scoreState = {
+        label: 'Not Ideal',
+        color: 'bg-red-100 text-red-700',
+        Icon: AlertTriangleIcon,
+      };
     } else if (cloudVal! > 30) {
-      scoreLabel = 'Decent ☁️';
-      color = 'bg-yellow-100 text-yellow-800';
+      scoreState = {
+        label: 'Decent',
+        color: 'bg-yellow-100 text-yellow-800',
+        Icon: CloudSunIcon,
+      };
     }
   }
+
+  const ScoreIcon = scoreState.Icon;
 
   const photos = placeInfo.photos ?? [];
   const reviews = placeInfo.reviews ?? [];
@@ -179,20 +210,23 @@ export default function InfoPanel({
               })
             }
             title="Save to Favorites"
-            className="text-red-500 hover:text-red-600 text-xl"
+            type="button"
+            className="text-red-500 hover:text-red-600 transition-colors"
           >
-            ❤️
+            <HeartIcon filled size={20} />
           </button>
         </div>
 
         {!hasWeather && (
-          <div className="text-red-600 bg-red-50 p-2 rounded text-sm border border-red-200">
-            ⚠️ Unable to fetch complete weather data from Open-Meteo. Showing fallback values.
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded p-3 flex items-start gap-2">
+            <AlertTriangleIcon size={18} className="text-red-500 mt-0.5" />
+            <span>Unable to fetch complete weather data from Open-Meteo. Showing fallback values.</span>
           </div>
         )}
 
-        <div className={`${color} p-2 rounded text-center font-medium`}>
-          Swim Score: {scoreLabel}
+        <div className={`${scoreState.color} p-2 rounded text-center font-medium flex items-center justify-center gap-2`}>
+          <ScoreIcon size={18} />
+          <span>Swim Score: {scoreState.label}</span>
         </div>
 
         {/* Wave Info Button */}
@@ -201,37 +235,52 @@ export default function InfoPanel({
             onClick={() => setShowWaveInfo(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
           >
-            🌊 Wave Info
+            <WaveIcon size={18} className="text-white" />
+            <span>Wave Info</span>
           </button>
         </div>
 
         {/* If swimScore is still loading or null */}
         {!swimScore && (
-          <div className="bg-yellow-50 p-2 rounded text-sm border border-yellow-200">
-            ⏳ Loading swim score data...
+          <div className="bg-yellow-50 p-2 rounded text-sm border border-yellow-200 flex items-center gap-2 text-yellow-800">
+            <HourglassIcon size={18} className="text-yellow-600" />
+            <span>Loading swim score data...</span>
           </div>
         )}
 
         {swimScore && (
           <div className="bg-blue-50 p-3 rounded border border-blue-200 text-sm">
-            <div className="flex items-center justify-between mb-1">
-              <p>
-                🏊 Total:{' '}
-                <span className="font-semibold">{swimScore.totalScore}/100</span>
-              </p>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-blue-900 font-medium">
+                <SwimmerIcon size={18} className="text-blue-600" />
+                <span>
+                  Total: <span className="font-semibold">{swimScore.totalScore}/100</span>
+                </span>
+              </div>
               <button
+                type="button"
                 onClick={() => setShowSwimScoreInfo(true)}
                 title="How is this calculated?"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1"
               >
-                ℹ️ Info
+                <InfoIcon size={14} className="text-white" />
+                <span>Info</span>
               </button>
             </div>
-            <ul className="mt-1 ml-2 list-disc list-inside">
-              <li>🛟 Safety: {swimScore.breakdown.safety}</li>
-              <li>😌 Comfort: {swimScore.breakdown.comfort}</li>
-              <li>🏃 Performance: {swimScore.breakdown.performance}</li>
-            </ul>
+            <div className="mt-1 space-y-1 text-sm text-blue-900">
+              <div className="flex items-center gap-2">
+                <LifebuoyIcon size={16} className="text-blue-600" />
+                <span>Safety: {swimScore.breakdown.safety}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <SmileIcon size={16} className="text-blue-600" />
+                <span>Comfort: {swimScore.breakdown.comfort}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <SpeedometerIcon size={16} className="text-blue-600" />
+                <span>Performance: {swimScore.breakdown.performance}</span>
+              </div>
+            </div>
             <div className="mt-2 space-y-1">
               {swimScore.explanation.map((msg, i) => (
                 <p key={i} className="text-xs text-gray-700">
@@ -245,7 +294,10 @@ export default function InfoPanel({
         {/* Beach Photos */}
         {photos.length > 0 && (
           <div className="mb-4">
-            <h3 className="font-semibold mt-4 mb-2">📸 Beach Photos</h3>
+            <h3 className="font-semibold mt-4 mb-2 flex items-center gap-2 text-gray-800">
+              <CameraIcon size={18} className="text-gray-600" />
+              <span>Beach Photos</span>
+            </h3>
             <div className="flex flex-wrap gap-2">
               {photos.map((photo, i) => (
                 <div key={i} className="relative h-24 w-32 flex-shrink-0">

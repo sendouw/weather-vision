@@ -24,3 +24,282 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.map-pin-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.map-pin {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 70%);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 6px 12px rgba(14, 165, 233, 0.4);
+}
+
+.map-pin__inner {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.35);
+}
+
+.map-pin__shadow {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  width: 18px;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  filter: blur(1px);
+}
+
+.logo-hero {
+  filter: drop-shadow(0 16px 40px rgba(14, 165, 233, 0.25));
+}
+
+.logo-sun {
+  position: absolute;
+  top: 10%;
+  left: 12%;
+  width: 60%;
+  height: 60%;
+  animation: logoSunSway 6s ease-in-out infinite;
+}
+
+.logo-sun__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #fde68a 0%, #fbbf24 45%, #f97316 100%);
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.45);
+  animation: logoSunPulse 5s ease-in-out infinite;
+}
+
+.logo-sun__flare {
+  position: absolute;
+  inset: -16%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.45), rgba(251, 191, 36, 0));
+  filter: blur(6px);
+  opacity: 0.6;
+  animation: logoSunGlow 7s ease-in-out infinite;
+}
+
+.group:hover .logo-sun__core {
+  animation-duration: 3.2s;
+}
+
+.group:hover .logo-sun__flare {
+  animation-duration: 4.2s;
+}
+
+
+.logo-cloud {
+  position: absolute;
+  bottom: 4%;
+  right: 6%;
+  width: 68%;
+  height: 48%;
+  animation: logoCloudFloat 5.5s ease-in-out infinite;
+}
+
+.group:hover .logo-cloud {
+  animation-duration: 3.5s;
+}
+
+.logo-cloud__bump {
+  position: absolute;
+  bottom: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.logo-cloud__bump--1 {
+  left: 12%;
+  width: 70%;
+  height: 58%;
+}
+
+.logo-cloud__bump--2 {
+  left: -2%;
+  bottom: 18%;
+  width: 48%;
+  height: 52%;
+}
+
+.logo-cloud__bump--3 {
+  right: 0;
+  bottom: 24%;
+  width: 44%;
+  height: 50%;
+}
+
+
+.logo-cloud__rain {
+  position: absolute;
+  bottom: -12px;
+  width: 4px;
+  height: 22px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.85), rgba(56, 189, 248, 0.35));
+  animation: logoRaindrop 1.9s ease-in-out infinite;
+}
+
+.logo-cloud__rain--1 {
+  left: 26%;
+}
+
+.logo-cloud__rain--2 {
+  left: 46%;
+  animation-delay: 0.28s;
+}
+
+.logo-cloud__rain--3 {
+  left: 66%;
+  animation-delay: 0.56s;
+}
+
+.logo-hero__wordmark {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 7vw, 3.5rem);
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #1d4ed8 0%, #0ea5e9 60%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.surface-pop {
+  animation: surfacePop 340ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
+.modal-pop {
+  animation: modalPop 320ms cubic-bezier(0.21, 0.94, 0.38, 1.07) both;
+}
+
+.overlay-fade {
+  animation: overlayFade 240ms ease-out both;
+}
+
+@keyframes logoSunPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes logoSunGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes logoSunSway {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes logoCloudFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes logoRaindrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.85);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(26px) scaleY(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(30px) scaleY(0.75);
+  }
+}
+
+@keyframes surfacePop {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.94);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlayFade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-sun,
+  .logo-sun__core,
+  .logo-sun__flare,
+  .logo-cloud,
+  .logo-cloud__rain,
+  .surface-pop,
+  .modal-pop,
+  .overlay-fade {
+    animation: none;
+  }
+}

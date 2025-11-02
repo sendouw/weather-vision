@@ -1,6 +1,16 @@
 // components/SwimScoreInfoModal.tsx
 'use client';
 
+import {
+  ChartIcon,
+  CloseIcon,
+  LifebuoyIcon,
+  SmileIcon,
+  SpeedometerIcon,
+  SwimmerIcon,
+  TargetIcon,
+} from './icons';
+
 interface Props {
   isVisible: boolean;
   onClose: () => void;
@@ -10,16 +20,21 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-[1px] flex items-center justify-center z-[9999] p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+    <div className="overlay-fade fixed inset-0 backdrop-blur-[1px] flex items-center justify-center z-[9999] p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
+      <div className="modal-pop bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-blue-50 flex-shrink-0">
-          <h2 className="text-xl font-semibold text-gray-900">🏊 How Swim Score is Calculated</h2>
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <SwimmerIcon size={22} className="text-blue-600" />
+            <span>How Swim Score is Calculated</span>
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold leading-none"
+            type="button"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close swim score info"
           >
-            ×
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -28,7 +43,10 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
           <div className="space-y-6">
             {/* Overview */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-blue-900 mb-2">📊 Composite Score Overview</h3>
+              <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <ChartIcon size={18} className="text-blue-600" />
+                <span>Composite Score Overview</span>
+              </h3>
               <p className="text-blue-800 text-sm">
                 The Swim Score is calculated from three key factors: Safety (50%), Comfort (30%), and Performance (20%). 
                 Each factor is scored from 0-100, with the final score weighted to prioritize swimmer safety above all else.
@@ -37,8 +55,8 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
 
             {/* Safety Section */}
             <div className="border rounded-lg p-5">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">🛟</span>
+              <div className="flex items-center mb-3 gap-2">
+                <LifebuoyIcon size={22} className="text-red-500" />
                 <h3 className="text-lg font-semibold text-gray-900">Safety (50% of total score)</h3>
               </div>
               <p className="text-gray-700 mb-3">
@@ -95,8 +113,8 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
 
             {/* Comfort Section */}
             <div className="border rounded-lg p-5">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">😌</span>
+              <div className="flex items-center mb-3 gap-2">
+                <SmileIcon size={22} className="text-yellow-500" />
                 <h3 className="text-lg font-semibold text-gray-900">Comfort (30% of total score)</h3>
               </div>
               <p className="text-gray-700 mb-3">
@@ -146,8 +164,8 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
 
             {/* Performance Section */}
             <div className="border rounded-lg p-5">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">🏃</span>
+              <div className="flex items-center mb-3 gap-2">
+                <SpeedometerIcon size={22} className="text-green-600" />
                 <h3 className="text-lg font-semibold text-gray-900">Performance (20% of total score)</h3>
               </div>
               <p className="text-gray-700 mb-3">
@@ -197,7 +215,10 @@ export default function SwimScoreInfoModal({ isVisible, onClose }: Props) {
 
             {/* Score Interpretation */}
             <div className="bg-gray-50 p-4 rounded-lg border">
-              <h3 className="font-semibold text-gray-900 mb-3">🎯 Score Interpretation</h3>
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <TargetIcon size={20} className="text-gray-700" />
+                <span>Score Interpretation</span>
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                 <div className="bg-green-100 p-2 rounded border border-green-200">
                   <div className="font-medium text-green-800">85-100: Perfect</div>

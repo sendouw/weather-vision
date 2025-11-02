@@ -6,6 +6,17 @@ import dynamic from 'next/dynamic';
 import SearchBar from '@/components/SearchBar';
 import InfoPanel, { PlaceInfo } from '@/components/infoPanel';
 import { OpenMeteoResponse } from '@/components/Map';
+import AnimatedLogo from '@/components/AnimatedLogo';
+import {
+  AlertTriangleIcon,
+  CloseIcon,
+  CheckCircleIcon,
+  HeartIcon,
+  LocationIcon,
+  PanelLeftIcon,
+  PanelRightIcon,
+  TrashIcon,
+} from '@/components/icons';
 
 const WeatherMap = dynamic(() => import('@/components/Map'), { ssr: false });
 
@@ -14,6 +25,11 @@ interface Favorite {
   coords: { lat: number; lng: number };
   addedAt?: string;
 }
+
+type AlertState = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
 
 export default function Home() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -31,7 +47,7 @@ export default function Home() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertState>(null);
   const [showLocationButton, setShowLocationButton] = useState(false);
 
   // Load favorites from localStorage on mount
@@ -71,12 +87,12 @@ export default function Home() {
       localStorage.setItem('weathervision-favorites', JSON.stringify(newFavorites));
 
       // Show success message
-      setError(`✅ Added "${fav.name}" to favorites!`);
-      setTimeout(() => setError(null), 3000);
+      setAlert({ type: 'success', message: `Added "${fav.name}" to favorites.` });
+      setTimeout(() => setAlert(null), 3000);
     } catch (err) {
       console.error('Failed to save favorite:', err);
-      setError('Failed to save favorite location');
-      setTimeout(() => setError(null), 3000);
+      setAlert({ type: 'error', message: 'Failed to save favorite location.' });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -120,7 +136,7 @@ export default function Home() {
 
   const fetchWeatherAndSwimScore = async (lat: number, lng: number) => {
     try {
-      setError(null);
+      setAlert(null);
       const res = await fetch(`/api/OpenMateo?lat=${lat}&lon=${lng}`);
 
       if (!res.ok) {
@@ -131,72 +147,72 @@ export default function Home() {
       setWeatherData(data);
     } catch (err) {
       console.error('Weather fetch failed:', err);
-      setError('Failed to fetch weather data. Please try again.');
+      setAlert({ type: 'error', message: 'Failed to fetch weather data. Please try again.' });
       setWeatherData({} as Record<string, unknown>);
     }
   };
 
-    // Add this function to request location with user interaction
-const requestLocation = () => {
-  setLoading(true);
-  setError(null);
-  
-  if (!('geolocation' in navigator)) {
-    const fallback = { lat: 7.5413, lng: 99.0955 };
-    setCoords(fallback);
-    fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
-    setLocationName('Koh Lanta, Thailand');
-    setLocationFallback(true);
-    setLoading(false);
-    setError('Geolocation is not supported by your browser');
-    return;
-  }
+  // Add this function to request location with user interaction
+  const requestLocation = () => {
+    setLoading(true);
+    setAlert(null);
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      setCoords({ lat: latitude, lng: longitude });
-      fetchWeatherAndSwimScore(latitude, longitude);
-      setLocationName('Your Current Location');
-      setLoading(false);
-      setShowLocationButton(false);
-      setLocationFallback(false);
-    },
-    (error) => {
-      console.warn('Geolocation failed:', error);
-      let errorMessage = 'Unable to get your location. ';
-      
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          errorMessage += 'Please enable location access in your browser settings.';
-          break;
-        case error.POSITION_UNAVAILABLE:
-          errorMessage += 'Location information is unavailable.';
-          break;
-        case error.TIMEOUT:
-          errorMessage += 'Location request timed out.';
-          break;
-        default:
-          errorMessage += 'An unknown error occurred.';
-      }
-      
-      setError(errorMessage);
-      
-      // Fall back to default location
+    if (!('geolocation' in navigator)) {
       const fallback = { lat: 7.5413, lng: 99.0955 };
       setCoords(fallback);
       fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
       setLocationName('Koh Lanta, Thailand');
       setLocationFallback(true);
       setLoading(false);
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
+      setAlert({ type: 'error', message: 'Geolocation is not supported by your browser.' });
+      return;
     }
-  );
-};
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ lat: latitude, lng: longitude });
+        fetchWeatherAndSwimScore(latitude, longitude);
+        setLocationName('Your Current Location');
+        setLoading(false);
+        setShowLocationButton(false);
+        setLocationFallback(false);
+      },
+      (error) => {
+        console.warn('Geolocation failed:', error);
+        let errorMessage = 'Unable to get your location. ';
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Please enable location access in your browser settings.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'An unknown error occurred.';
+        }
+
+        setAlert({ type: 'error', message: errorMessage });
+
+        // Fall back to default location
+        const fallback = { lat: 7.5413, lng: 99.0955 };
+        setCoords(fallback);
+        fetchWeatherAndSwimScore(fallback.lat, fallback.lng);
+        setLocationName('Koh Lanta, Thailand');
+        setLocationFallback(true);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
 
 // Update the initialization effect
 useEffect(() => {
@@ -206,7 +222,7 @@ useEffect(() => {
   
   if (!isHttps && !isLocalhost) {
     console.warn('Geolocation requires HTTPS');
-    setError('Location access requires a secure connection (HTTPS)');
+    setAlert({ type: 'error', message: 'Location access requires a secure connection (HTTPS).' });
   }
   
   // Show location button instead of auto-requesting
@@ -234,26 +250,26 @@ useEffect(() => {
     <main className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 relative">
       <div className="w-full max-w-screen-xl mx-auto px-4 md:px-8 pb-24">
         {/* Header */}
-        <div className="text-center pt-8 pb-6">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent z-10 relative">
-            Weather Vision 🌤
-          </h1>
-          <p className="mt-3 text-gray-700 text-lg max-w-2xl mx-auto leading-relaxed">
-            Discover perfect swimming conditions anywhere in the world. Get real-time weather analysis{' '}
-            and swim scores to plan your ideal beach day.
+        <div className="text-center pt-8 pb-6 flex flex-col items-center gap-4">
+          <AnimatedLogo />
+          <p className="text-gray-700 text-lg max-w-2xl leading-relaxed">
+            Discover perfect swimming conditions anywhere in the world. Get real-time weather analysis and swim
+            scores to plan your ideal beach day.
           </p>
         </div>
 
         {/* Location Button */}
         {showLocationButton && !locationFallback && (
-  <div className="text-center mb-4">
-    <button
-      onClick={requestLocation}
-      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
-    >
-      📍 Use My Location
-    </button>
-  </div>
+          <div className="text-center mb-4">
+            <button
+              type="button"
+              onClick={requestLocation}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
+            >
+              <LocationIcon size={18} className="text-white" />
+              <span>Use My Location</span>
+            </button>
+          </div>
         )}
 
         {/* Search and Controls */}
@@ -280,55 +296,75 @@ useEffect(() => {
 
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => setShowFavorites(!showFavorites)}
               className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm text-black"
             >
-              ❤️ Favorites ({favorites.length})
+              <HeartIcon filled={showFavorites} size={18} className="text-red-500" />
+              <span>Favorites ({favorites.length})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setShowSidebar(!showSidebar)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-black"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-black flex items-center gap-2"
             >
-              {showSidebar ? '⇤ Hide Panel' : '⇥ Show Panel'}
+              {showSidebar ? (
+                <>
+                  <PanelRightIcon size={16} />
+                  <span>Hide Panel</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeftIcon size={16} />
+                  <span>Show Panel</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Error Messages */}
-        {error && (
+        {/* Alerts */}
+        {alert && (
           <div
-            className={`mb-4 p-3 rounded-lg text-sm ${
-              error.startsWith('✅')
+            className={`surface-pop mb-4 p-3 rounded-lg text-sm flex items-start gap-2 ${
+              alert.type === 'success'
                 ? 'bg-green-100 border border-green-300 text-green-800'
                 : 'bg-red-100 border border-red-300 text-red-800'
             }`}
           >
-            {error}
+            {alert.type === 'success' ? (
+              <CheckCircleIcon size={18} className="text-green-600 mt-0.5" />
+            ) : (
+              <AlertTriangleIcon size={18} className="text-red-600 mt-0.5" />
+            )}
+            <span>{alert.message}</span>
           </div>
         )}
 
         {/* Location Fallback Warning */}
         {locationFallback && (
-          <div className="relative text-center bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg p-3 mb-4 max-w-screen-md mx-auto">
-            ⚠️ Location access not available. Showing Koh Lanta, Thailand as example.
+          <div className="surface-pop relative bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg p-3 mb-4 max-w-screen-md mx-auto flex items-start gap-2">
+            <AlertTriangleIcon size={18} className="text-yellow-600 mt-0.5" />
+            <span>Location access not available. Showing Koh Lanta, Thailand as example.</span>
             <button
+              type="button"
               onClick={() => setLocationFallback(false)}
-              className="absolute right-3 top-2 text-yellow-700 hover:text-yellow-900 font-bold text-lg"
+              className="absolute right-3 top-2 text-yellow-700 hover:text-yellow-900"
               aria-label="Dismiss fallback message"
             >
-              ×
+              <CloseIcon size={16} />
             </button>
           </div>
         )}
 
         {/* Favorites Dropdown */}
         {showFavorites && (
-          <div className="mb-4 bg-white rounded-lg shadow-lg border p-4 z-40 relative">
+          <div className="surface-pop mb-4 bg-white rounded-lg shadow-lg border p-4 z-40 relative">
             <h3 className="font-semibold mb-3 text-gray-800">Your Favorite Locations</h3>
             {favorites.length === 0 ? (
               <p className="text-gray-500 text-sm">
-                No favorite locations saved yet. Click the ❤️ button on any location to save it!
+                No favorite locations saved yet. Click the heart icon on any location to save it.
               </p>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -344,11 +380,12 @@ useEffect(() => {
                       </div>
                     </button>
                     <button
+                      type="button"
                       onClick={() => removeFavorite(index)}
                       className="ml-2 text-red-500 hover:text-red-700 p-1"
                       title="Remove from favorites"
                     >
-                      🗑️
+                      <TrashIcon size={16} />
                     </button>
                   </div>
                 ))}

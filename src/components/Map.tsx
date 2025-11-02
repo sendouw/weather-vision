@@ -166,10 +166,10 @@ export default function WeatherMap({
 
     // Custom marker
     const customIcon = L.divIcon({
-      html: '📍',
-      className: 'custom-marker',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      html: '<div class="map-pin"><span class="map-pin__inner"></span></div><div class="map-pin__shadow"></div>',
+      className: 'map-pin-wrapper',
+      iconSize: [32, 40],
+      iconAnchor: [16, 34],
     });
     const marker = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(mapInstance);
     markerRef.current = marker;

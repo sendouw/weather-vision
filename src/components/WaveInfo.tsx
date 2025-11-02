@@ -2,6 +2,16 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  AlertTriangleIcon,
+  CloseIcon,
+  ErrorIcon,
+  LocationIcon,
+  RefreshIcon,
+  SignalIcon,
+  SwimmerIcon,
+  WaveIcon,
+} from './icons';
 
 interface Props {
   coords: { lat: number; lng: number } | null;
@@ -69,11 +79,15 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
   };
 
   const getWaveConditionLabel = (height: number) => {
-    if (height < 0.5) return { label: 'Calm', color: 'text-green-700 bg-green-100', emoji: '😌' };
-    if (height < 1.0) return { label: 'Small', color: 'text-blue-700 bg-blue-100', emoji: '🌊' };
-    if (height < 2.0) return { label: 'Moderate', color: 'text-yellow-700 bg-yellow-100', emoji: '🌊' };
-    if (height < 3.0) return { label: 'Large', color: 'text-orange-700 bg-orange-100', emoji: '🌊' };
-    return { label: 'Very Large', color: 'text-red-700 bg-red-100', emoji: '⚠️' };
+    if (height < 0.5)
+      return { label: 'Calm', color: 'text-green-700 bg-green-100', Icon: WaveIcon };
+    if (height < 1.0)
+      return { label: 'Small', color: 'text-blue-700 bg-blue-100', Icon: WaveIcon };
+    if (height < 2.0)
+      return { label: 'Moderate', color: 'text-yellow-700 bg-yellow-100', Icon: WaveIcon };
+    if (height < 3.0)
+      return { label: 'Large', color: 'text-orange-700 bg-orange-100', Icon: WaveIcon };
+    return { label: 'Very Large', color: 'text-red-700 bg-red-100', Icon: AlertTriangleIcon };
   };
 
   const getDirectionName = (degrees: number) => {
@@ -129,18 +143,23 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-[1px] flex items-center justify-center z-[9999] p-4"
+      className="overlay-fade fixed inset-0 backdrop-blur-[1px] flex items-center justify-center z-[9999] p-4"
       style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-[600px] flex flex-col">
+      <div className="modal-pop bg-white rounded-lg shadow-xl w-full max-w-md h-[600px] flex flex-col">
         {/* Header - Fixed */}
         <div className="flex items-center justify-between p-4 border-b bg-gray-50 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">🌊 Wave Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <WaveIcon size={20} className="text-blue-600" />
+            <span>Wave Information</span>
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold leading-none"
+            type="button"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close wave information"
           >
-            ×
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -149,8 +168,8 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
           {/* Initial state - not loading, no data, no error */}
           {!waveData && !loading && !error && (
             <div className="text-center py-8">
-              <div className="mb-4">
-                <div className="text-6xl mb-2">🌊</div>
+              <div className="mb-4 flex flex-col items-center">
+                <WaveIcon size={56} className="text-blue-500 mb-3" />
                 <p className="text-gray-600 mb-4">
                   Get current wave conditions and marine weather data for this location
                 </p>
@@ -175,16 +194,19 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
 
           {/* Error state */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <span className="text-red-600 font-medium">❌ Error</span>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <ErrorIcon size={18} className="text-red-600" />
+                <span className="text-red-700 font-medium">Error</span>
               </div>
-              <p className="text-red-700 text-sm mb-3">{error}</p>
+              <p className="text-red-700 text-sm">{error}</p>
               <button
+                type="button"
                 onClick={fetchWaveData}
-                className="text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                className="text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-2 w-max"
               >
-                Try Again
+                <RefreshIcon size={16} className="text-white" />
+                <span>Try Again</span>
               </button>
             </div>
           )}
@@ -193,13 +215,22 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
           {waveData && (
             <div className="space-y-4">
               {/* Data source info */}
-              <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                📡 {dataSource} • Updated: {new Date(waveData.timestamp).toLocaleTimeString()}
+              <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <SignalIcon size={16} className="text-gray-500" />
+                  <span>{dataSource}</span>
+                </div>
+                <span className="text-gray-500">
+                  Updated: {new Date(waveData.timestamp).toLocaleTimeString()}
+                </span>
               </div>
 
               {/* Location info */}
-              <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
-                📍 Location: {waveData.location.lat.toFixed(4)}°, {waveData.location.lon.toFixed(4)}°
+              <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded flex items-center gap-2">
+                <LocationIcon size={18} className="text-blue-600" />
+                <span>
+                  Location: {waveData.location.lat.toFixed(4)}°, {waveData.location.lon.toFixed(4)}°
+                </span>
               </div>
 
               {/* Wave height */}
@@ -238,11 +269,11 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
                   {/* Wave condition badge */}
                   {(() => {
                     const condition = getWaveConditionLabel(waveData.waveHeight);
+                    const ConditionIcon = condition.Icon;
                     return (
-                      <div
-                        className={`${condition.color} px-3 py-2 rounded-lg text-sm font-medium text-center`}
-                      >
-                        {condition.emoji} {condition.label} Waves
+                      <div className={`${condition.color} px-3 py-2 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-2`}>
+                        <ConditionIcon size={18} />
+                        <span>{condition.label} Waves</span>
                       </div>
                     );
                   })()}
@@ -283,7 +314,10 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
                 const suitability = getSwimmingSuitability(waveData.waveHeight);
                 return (
                   <div className={`border rounded-lg p-4 ${suitability.color}`}>
-                    <h3 className="font-semibold mb-2">🏊‍♀️ Swimming Assessment</h3>
+                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                      <SwimmerIcon size={18} className="text-blue-600" />
+                      <span>Swimming Assessment</span>
+                    </h3>
                     <div className="font-medium mb-1">{suitability.label}</div>
                     <p className="text-sm">{suitability.advice}</p>
                   </div>
@@ -294,9 +328,16 @@ export default function WaveInfo({ coords, isVisible, onClose }: Props) {
               <button
                 onClick={fetchWaveData}
                 disabled={loading}
-                className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
               >
-                {loading ? 'Refreshing...' : '🔄 Refresh Wave Data'}
+                {loading ? (
+                  'Refreshing...'
+                ) : (
+                  <>
+                    <RefreshIcon size={18} className="text-gray-600" />
+                    <span>Refresh Wave Data</span>
+                  </>
+                )}
               </button>
             </div>
           )}

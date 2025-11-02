@@ -58,68 +58,68 @@ function buildExplanation({
 
   // Use the breakdown scores to generate score-based insights:
   if (safety < 20) {
-    messages.push(`⚠️ Safety score is critically low (${safety}/100)`);
+    messages.push(`Warning: Safety score is critically low (${safety}/100).`);
   } else if (safety < 40) {
-    messages.push(`⚠️ Safety concerns present (score: ${safety}/100)`);
+    messages.push(`Alert: Safety concerns present (score: ${safety}/100).`);
   }
 
   if (comfort < 20) {
-    messages.push(`😣 Comfort conditions are poor (score: ${comfort}/100)`);
+    messages.push(`Comfort conditions are poor (score: ${comfort}/100).`);
   } else if (comfort > 80) {
-    messages.push(`😊 Excellent comfort conditions (score: ${comfort}/100)`);
+    messages.push(`Comfort conditions are excellent (score: ${comfort}/100).`);
   }
 
   if (performance < 20) {
-    messages.push(`🏃 Performance conditions are challenging (score: ${performance}/100)`);
+    messages.push(`Performance conditions are challenging (score: ${performance}/100).`);
   }
 
   // Critical safety alerts (highest priority)
   if (String(inputs.weatherCode).includes('thunderstorm') || inputs.weatherCode === '95') {
-    messages.push('⚡ DANGER: Thunderstorm activity detected - do not enter water');
+    messages.push('Danger: Thunderstorm activity detected—do not enter the water.');
   }
   if (inputs.windSpeed >= 40) {
-    messages.push('🌬️ Strong winds reduce safety for swimmers');
+    messages.push('Strong winds reduce safety for swimmers.');
   }
   if (inputs.sst < 15) {
-    messages.push('❄️ Water too cold (<15 °C) - risk of hypothermia');
+    messages.push('Water too cold (<15 °C) — risk of hypothermia.');
   }
   if (inputs.precipAmount >= 10 || inputs.precipLast24h >= 30) {
-    messages.push('🌧️ Heavy precipitation may reduce visibility and safety');
+    messages.push('Heavy precipitation may reduce visibility and safety.');
   }
   if (inputs.visibility < 1000) {
-    messages.push('⚠️ Low visibility (<1 km) is unsafe for water activities');
+    messages.push('Warning: Low visibility (<1 km) is unsafe for water activities.');
   }
   if (inputs.airQualityIndex >= 150) {
-    messages.push('😷 Poor air quality (AQI ≥ 150) - consider wearing a mask');
+    messages.push('Poor air quality (AQI ≥ 150) — consider wearing a mask.');
   }
 
-  // Now add “comfort” insights
+  // Now add comfort insights
   if (inputs.apparentTemp > 38) {
-    messages.push('🔥 Very hot air temperature (> 38 °C) may be uncomfortable');
+    messages.push('Very hot air temperature (>38 °C) may be uncomfortable.');
   } else if (inputs.apparentTemp < 18) {
-    messages.push('🥶 Chilly air temperature (< 18 °C) may be uncomfortable');
+    messages.push('Chilly air temperature (<18 °C) may be uncomfortable.');
   }
   if (inputs.uvIndex >= 11) {
-    messages.push('🧴 Extreme UV levels (UV ≥ 11) - apply SPF 30+ sunscreen');
+    messages.push('Extreme UV levels (UV ≥ 11) — apply SPF 30+ sunscreen.');
   } else if (inputs.uvIndex >= 9) {
-    messages.push('☀️ High UV (UV ≥ 9) - apply sunscreen and limit exposure');
+    messages.push('High UV (UV ≥ 9) — apply sunscreen and limit exposure.');
   }
 
   // Performance insights
   if (inputs.windSpeed > 20 && inputs.apparentTemp < 26) {
-    messages.push('🌬️ Wind chill may make you feel colder when wet');
+    messages.push('Wind chill may make you feel colder when wet.');
   }
   if (inputs.cloudCover < 20 && inputs.uvIndex >= 6) {
-    messages.push('😎 Clear skies + UV ≥ 6 - bring shade and protective gear');
+    messages.push('Clear skies with UV ≥ 6 — bring shade and protective gear.');
   }
 
   // Finally, prefix a summary based on the “total” score
   if (total >= 80) {
-    messages.unshift('🏊 Ideal conditions for a swim!');
+    messages.unshift('Summary: Ideal conditions for a swim.');
   } else if (total >= 50) {
-    messages.unshift('🤔 Moderate conditions; swim with caution.');
+    messages.unshift('Summary: Moderate conditions; swim with caution.');
   } else {
-    messages.unshift('🚫 Conditions not recommended for swimming.');
+    messages.unshift('Summary: Conditions not recommended for swimming.');
   }
 
   return messages;
